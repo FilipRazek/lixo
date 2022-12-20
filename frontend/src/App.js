@@ -1,22 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import "./App.css";
 
 function App() {
+  const [count, setCount] = useState();
+  useEffect(() => {
+    const fetchCount = async () => {
+      const { href: url } = new URL(
+        process.env.REACT_APP_COUNT_URL,
+        process.env.REACT_APP_BACKEND_URL
+      );
+      const { data } = await axios.get(url);
+      setCount(data);
+    };
+    fetchCount();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <p>Count fetched : {count}</p>
       </header>
     </div>
   );
