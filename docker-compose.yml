@@ -1,0 +1,8 @@
+version: '3'
+services:
+  lixo:
+    image: mongo:6.0.0
+    environment:
+      MONGO_INITDB_DATABASE: lixo
+    ports:
+      - 27017:27017
