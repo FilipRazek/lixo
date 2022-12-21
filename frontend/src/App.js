@@ -1,28 +1,39 @@
-import logo from "./logo.svg";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
 function App() {
-  const [count, setCount] = useState();
+  const [initialCount, setInitialCount] = useState(0);
+  const [count, setCount] = useState(0);
+
+  const { href: countUrl } = new URL(
+    process.env.REACT_APP_COUNT_URL,
+    process.env.REACT_APP_BACKEND_URL
+  );
   useEffect(() => {
-    const fetchCount = async () => {
-      const { href: url } = new URL(
-        process.env.REACT_APP_COUNT_URL,
-        process.env.REACT_APP_BACKEND_URL
-      );
-      const { data } = await axios.get(url);
+    const fetchInitialCount = async () => {
+      const { data } = await axios.get(countUrl);
+      setInitialCount(data);
       setCount(data);
     };
-    fetchCount();
-  }, []);
+    fetchInitialCount();
+  }, [countUrl]);
+
+  const updateValue = ({ target: { value } }) => {
+    setCount(value);
+  };
+
+  const sendValue = async () => {
+    await axios.post(countUrl, count);
+  };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Count fetched : {count}</p>
-      </header>
+      <p>Initial count fetched : {initialCount}</p>
+      <input value={count} onChange={updateValue} />
+      <button type="button" onClick={sendValue}>
+        Update value
+      </button>
     </div>
   );
 }
