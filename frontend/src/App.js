@@ -2,34 +2,50 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
-function App() {
-  const [initialCount, setInitialCount] = useState(0);
-  const [count, setCount] = useState(0);
+const { href: COUNT_URL } = new URL(
+  process.env.REACT_APP_COUNT_URL,
+  process.env.REACT_APP_BACKEND_URL
+);
+const fetchCountFromServer = async () => {
+  const { data } = await axios.get(COUNT_URL);
+  return data;
+};
 
-  const { href: countUrl } = new URL(
-    process.env.REACT_APP_COUNT_URL,
-    process.env.REACT_APP_BACKEND_URL
-  );
+function App() {
+  const [count, setCount] = useState(undefined);
+  const [serverCount, setServerCount] = useState(undefined);
+
   useEffect(() => {
-    const fetchInitialCount = async () => {
-      const { data } = await axios.get(countUrl);
-      setInitialCount(data);
-      setCount(data);
-    };
-    fetchInitialCount();
-  }, [countUrl]);
+    const interval = setInterval(async () => {
+      const serverCount = await fetchCountFromServer();
+      setServerCount(serverCount);
+      if (count === undefined) {
+        setCount(serverCount);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [count]);
 
   const updateValue = ({ target: { value } }) => {
     setCount(value);
   };
 
   const sendValue = async () => {
-    await axios.post(countUrl, count);
+    if (count === undefined) {
+      return;
+    }
+    setServerCount(count);
+    await axios.post(COUNT_URL, count, {
+      headers: { "Content-Type": "text/plain" },
+    });
   };
 
-  return (
+  return count === undefined ? (
+    <p>Loading...</p>
+  ) : (
     <div className="App">
-      <p>Initial count fetched : {initialCount}</p>
+      <p>Count on server : {serverCount}</p>
       <input value={count} onChange={updateValue} />
       <button type="button" onClick={sendValue}>
         Update value

@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin(origins = "*")
 public class CountController {
 
+  private String count;
+
   Logger logger = Logger.getLogger(CountController.class.getName());
 
   @GetMapping
   public String getCount() {
-    return "364";
+    return this.count;
   }
 
   @PostMapping
   public void setCount(@RequestBody String newCount) {
     logger.log(Level.INFO, newCount);
+    this.count = newCount;
   }
 }
