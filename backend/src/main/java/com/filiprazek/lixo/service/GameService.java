@@ -17,6 +17,26 @@ public class GameService {
     @Autowired
     private GameRepository gameRepository;
 
+    /**
+     * Check if a player has won on a tic-tac-toe board.
+     * 
+     * @author ChatGPT (OpenAI)
+     */
+    private boolean checkWin(List<Integer> cellValues, int player) {
+        int[][] winningTriplets = { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 }, { 0, 3, 6 }, { 1, 4, 7 }, { 2, 5, 8 },
+                { 0, 4, 8 }, { 2, 4, 6 } };
+
+        // Check for winning patterns
+        for (int[] triplet : winningTriplets) {
+            if (cellValues.get(triplet[0]) == player && cellValues.get(triplet[1]) == player
+                    && cellValues.get(triplet[2]) == player)
+                return true;
+        }
+
+        // No winning pattern found
+        return false;
+    }
+
     public Game findById(String id) {
         return gameRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
@@ -43,14 +63,15 @@ public class GameService {
             totalCellValue += cellValue;
         }
 
-        boolean canBePlayed = cellValues.get(move) == 0;
-        if (!canBePlayed) {
+        // First player is 1, then 2
+        int player = totalCellValue % 3 == 0 ? 1 : 2;
+        int otherPlayer = 3 - player;
+        boolean isGameWon = this.checkWin(cellValues, otherPlayer);
+        boolean moveCanBePlayed = cellValues.get(move) == 0;
+        if (isGameWon || !moveCanBePlayed) {
             throw new InvalidMoveException();
         }
-
-        // First player is 1,then 2
-        int player = totalCellValue % 3 == 0 ? 1 : 2;
-        int newBoard = board + player * (int)Math.pow(3, move);
+        int newBoard = board + player * (int) Math.pow(3, move);
 
         game.setBoard(newBoard);
         return gameRepository.save(game);
