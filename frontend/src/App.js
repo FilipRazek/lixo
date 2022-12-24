@@ -1,54 +1,77 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { TicTacToeGrid } from "./components/TicTacToeGrid";
 import "./App.css";
 
-const { href: COUNT_URL } = new URL(
-  process.env.REACT_APP_COUNT_URL,
+const { href: GAME_URL } = new URL(
+  process.env.REACT_APP_GAME_URL,
   process.env.REACT_APP_BACKEND_URL
 );
-const fetchCountFromServer = async () => {
-  const { data } = await axios.get(COUNT_URL);
+
+const { href: NEW_GAME_URL } = new URL(
+  process.env.REACT_APP_NEW_GAME_URL,
+  process.env.REACT_APP_BACKEND_URL
+);
+
+const createNewGame = async () => {
+  const { data } = await axios.post(NEW_GAME_URL);
   return data;
 };
 
+const fetchBoardData = async (gameId) => {
+  const {
+    data: { board },
+  } = await axios.get(`${GAME_URL}/${gameId}`);
+  return board;
+};
+
 function App() {
-  const [count, setCount] = useState(undefined);
-  const [serverCount, setServerCount] = useState(undefined);
+  const [gameId, setGameId] = useState();
+  const [boardData, setBoardData] = useState();
+  const [move, setMove] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      const serverCount = await fetchCountFromServer();
-      setServerCount(serverCount);
-      if (count === undefined) {
-        setCount(serverCount);
-      }
-    }, 1000);
+    const fetchNewGameId = async () => {
+      const newGameId = await createNewGame();
+      setGameId(newGameId);
+    };
+    // Run once
+    fetchNewGameId();
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [count]);
+  useEffect(() => {
+    if (gameId !== undefined) {
+      // Start sever fetch interval
+      const interval = setInterval(async () => {
+        const boardData = await fetchBoardData(gameId);
+        setBoardData(boardData);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [gameId]);
 
-  const updateValue = ({ target: { value } }) => {
-    setCount(value);
-  };
-
-  const sendValue = async () => {
-    if (count === undefined) {
+  const sendMove = async () => {
+    if (boardData === undefined) {
       return;
     }
-    setServerCount(count);
-    await axios.post(COUNT_URL, count, {
+    await axios.post(`${GAME_URL}/${gameId}`, move, {
       headers: { "Content-Type": "text/plain" },
     });
   };
 
-  return count === undefined ? (
+  return boardData === undefined ? (
     <p>Loading...</p>
   ) : (
     <div className="App">
-      <p>Count on server : {serverCount}</p>
-      <input value={count} onChange={updateValue} />
-      <button type="button" onClick={sendValue}>
-        Update value
+      <p>{gameId}</p>
+      <TicTacToeGrid state={boardData} />
+      <input
+        value={move}
+        type="number"
+        onChange={({ target: { value } }) => setMove(value)}
+      />
+      <button type="button" onClick={sendMove}>
+        Update board data
       </button>
     </div>
   );
