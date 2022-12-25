@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TicTacToeGrid } from "../../components/TicTacToeGrid";
 import { createNewGame, fetchBoardData, sendMove } from "../../client";
+import "./index.css";
 
 export const Home = () => {
   const [gameId, setGameId] = useState();

@@ -1,8 +1,22 @@
-table {
+.Grid__table {
   border-collapse: collapse;
 }
 
-td {
+.Grid__table-cell {
+  text-align: center;
+  height: 10vw;
+  width: 10vw;
   border: 1px solid black;
-  padding: 10px;
+}
+
+.Grid__table-cell--orange {
+  background-color: rgb(252, 217, 153);
+}
+
+.Grid__table-cell--blue {
+  background-color: rgb(145, 174, 255);
+}
+
+.Grid__table-cell--clickable {
+  cursor: pointer;
 }
