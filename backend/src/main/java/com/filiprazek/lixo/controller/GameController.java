@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.filiprazek.lixo.data.Game;
+import com.filiprazek.lixo.dto.MoveDto;
 import com.filiprazek.lixo.service.GameService;
 
 @RestController
@@ -29,8 +30,8 @@ public class GameController {
   }
 
   @PostMapping("/{id}")
-  public Game move(@PathVariable String id, @RequestBody String move) {
-    return this.gameService.move(id, Integer.parseInt(move));
+  public Game move(@PathVariable String id, @RequestBody MoveDto data) {
+    return this.gameService.move(id, Integer.parseInt(data.move));
   }
 
   @PostMapping("new")

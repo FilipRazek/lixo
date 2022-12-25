@@ -23,5 +23,5 @@ export const fetchBoardData = async (gameId) => {
 };
 
 export const sendMove = (gameId, move) => {
-  axios.post(`${GAME_URL}/${gameId}`, move);
+  axios.post(`${GAME_URL}/${gameId}`, { move });
 };
