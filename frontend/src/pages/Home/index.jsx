@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { TicTacToeGrid } from "./components/TicTacToeGrid";
-import "./App.css";
-import { createNewGame, fetchBoardData, sendMove } from "./client";
+import { TicTacToeGrid } from "../../components/TicTacToeGrid";
+import { createNewGame, fetchBoardData, sendMove } from "../../client";
 
-function App() {
+export const Home = () => {
   const [gameId, setGameId] = useState();
   const [boardData, setBoardData] = useState();
 
@@ -30,14 +29,11 @@ function App() {
   return boardData === undefined ? (
     <p>Loading...</p>
   ) : (
-    <div className="App">
-      <p>{gameId}</p>
+    <div>
       <TicTacToeGrid
         state={boardData}
         onClick={(index) => sendMove(gameId, index)}
       />
     </div>
   );
-}
-
-export default App;
+};
