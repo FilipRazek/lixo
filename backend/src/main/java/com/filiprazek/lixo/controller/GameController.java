@@ -1,8 +1,5 @@
 package com.filiprazek.lixo.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.filiprazek.lixo.data.Game;
+import com.filiprazek.lixo.dto.GameDto;
 import com.filiprazek.lixo.dto.MoveDto;
+import com.filiprazek.lixo.entities.GameEntity;
 import com.filiprazek.lixo.service.GameService;
 
 @RestController
@@ -25,18 +23,19 @@ public class GameController {
   private GameService gameService;
 
   @GetMapping("/{id}")
-  public Game get(@PathVariable String id) {
-    return this.gameService.findById(id);
+  public GameDto get(@PathVariable String id) {
+    GameEntity gameEntity = this.gameService.findEntityById(id);
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.player, gameEntity.isWon);
   }
 
   @PostMapping("/{id}")
-  public Game move(@PathVariable String id, @RequestBody MoveDto data) {
-    return this.gameService.move(id, Integer.parseInt(data.move));
+  public GameDto move(@PathVariable String id, @RequestBody MoveDto data) {
+    GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move));
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.player, gameEntity.isWon);
   }
 
   @PostMapping("new")
   public String startNew() {
-    Game newGame = this.gameService.newGame();
-    return newGame.getId();
+    return this.gameService.newGame().id;
   }
 }

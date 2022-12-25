@@ -15,11 +15,9 @@ export const createNewGame = async () => {
   return data;
 };
 
-export const fetchBoardData = async (gameId) => {
-  const {
-    data: { board },
-  } = await axios.get(`${GAME_URL}/${gameId}`);
-  return board;
+export const fetchGameData = async (gameId) => {
+  const { data } = await axios.get(`${GAME_URL}/${gameId}`);
+  return data;
 };
 
 export const sendMove = (gameId, move) => {

@@ -1,6 +1,7 @@
 package com.filiprazek.lixo.service;
 
 import com.filiprazek.lixo.data.Game;
+import com.filiprazek.lixo.entities.GameEntity;
 import com.filiprazek.lixo.exception.EntityNotFoundException;
 import com.filiprazek.lixo.exception.InvalidMoveException;
 import com.filiprazek.lixo.repository.GameRepository;
@@ -16,6 +17,26 @@ public class GameService {
 
     @Autowired
     private GameRepository gameRepository;
+
+    private List<Integer> getCellValues(int board) {
+        List<Integer> cellValues = new ArrayList<>();
+
+        for (int cell = 0; cell < 9; cell++) {
+            // Cell value is given by the ternary decomposition of board
+            int cellValue = (int) Math.floor(board / Math.pow(3, cell)) % 3;
+            cellValues.add(cellValue);
+        }
+        return cellValues;
+    }
+
+    private int getPlayerFromCellValues(List<Integer> cellValues) {
+        int totalCellValue = 0;
+        for (int value : cellValues) {
+            totalCellValue += value;
+        }
+        // First player is 1, then 2
+        return totalCellValue % 3 == 0 ? 1 : 2;
+    }
 
     /**
      * Check if a player has won on a tic-tac-toe board.
@@ -37,43 +58,40 @@ public class GameService {
         return false;
     }
 
-    public Game findById(String id) {
+    private Game findById(String id) {
         return gameRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
 
-    public Game save(Game game) {
-        return gameRepository.save(game);
-    }
-
-    public Game newGame() {
-        return gameRepository.save(new Game());
-    }
-
-    public Game move(String id, int move) {
+    public GameEntity findEntityById(String id) {
         Game game = this.findById(id);
-        int board = game.getBoard();
+        List<Integer> cellValues = this.getCellValues(game.getBoard());
+        int player = this.getPlayerFromCellValues(cellValues);
+        int otherPlayer = 3 - player;
+        boolean isWon = this.checkWin(cellValues, otherPlayer);
+        return new GameEntity(game.getId(), game.getBoard(), player, isWon);
+    }
 
-        List<Integer> cellValues = new ArrayList<>();
-        int totalCellValue = 0;
+    public GameEntity newGame() {
+        Game newGame = gameRepository.save(new Game());
+        return new GameEntity(newGame.getId(), newGame.getBoard(), 1, false);
+    }
 
-        for (int cell = 0; cell < 9; cell++) {
-            // Cell value is given by the ternary decomposition of board
-            int cellValue = (int) Math.floor(board / Math.pow(3, cell)) % 3;
-            cellValues.add(cellValue);
-            totalCellValue += cellValue;
-        }
-
-        // First player is 1, then 2
-        int player = totalCellValue % 3 == 0 ? 1 : 2;
+    public GameEntity move(String id, int move) {
+        Game game = this.findById(id);
+        List<Integer> cellValues = this.getCellValues(game.getBoard());
+        int player = this.getPlayerFromCellValues(cellValues);
         int otherPlayer = 3 - player;
         boolean isGameWon = this.checkWin(cellValues, otherPlayer);
+
         boolean moveCanBePlayed = cellValues.get(move) == 0;
         if (isGameWon || !moveCanBePlayed) {
             throw new InvalidMoveException();
         }
-        int newBoard = board + player * (int) Math.pow(3, move);
+        int newBoard = game.getBoard() + player * (int) Math.pow(3, move);
 
         game.setBoard(newBoard);
-        return gameRepository.save(game);
+        gameRepository.save(game);
+
+        return new GameEntity(game.getId(), newBoard, player, isGameWon);
     }
 }

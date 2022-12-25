@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { TicTacToeGrid } from "../../components/TicTacToeGrid";
-import { createNewGame, fetchBoardData, sendMove } from "../../client";
+import { createNewGame, fetchGameData, sendMove } from "../../client";
 import "./index.css";
+
+const SERVER_UPDATE_INTERVAL = 4000;
 
 export const Home = () => {
   const [gameId, setGameId] = useState();
-  const [boardData, setBoardData] = useState();
+  const [board, setBoard] = useState();
+  const [player, setPlayer] = useState();
 
   useEffect(() => {
     const fetchNewGameId = async () => {
@@ -20,21 +23,29 @@ export const Home = () => {
     if (gameId !== undefined) {
       // Start sever fetch interval
       const interval = setInterval(async () => {
-        const newBoardData = await fetchBoardData(gameId);
-        setBoardData(newBoardData);
-      }, 1000);
+        const { board: newBoard, player: newPlayer } = await fetchGameData(
+          gameId
+        );
+        setBoard(newBoard);
+        setPlayer(newPlayer);
+      }, SERVER_UPDATE_INTERVAL);
       return () => clearInterval(interval);
     }
   }, [gameId]);
 
-  return boardData === undefined ? (
+  const onGridClick = (index) => {
+    // Update client side
+    // TODO: Check if game is won
+    setBoard(board + player * 3 ** index);
+    setPlayer(3 - player);
+    sendMove(gameId, index);
+  };
+
+  return board === undefined ? (
     <p>Loading...</p>
   ) : (
     <div>
-      <TicTacToeGrid
-        state={boardData}
-        onClick={(index) => sendMove(gameId, index)}
-      />
+      <TicTacToeGrid state={board} onClick={onGridClick} />
     </div>
   );
 };
