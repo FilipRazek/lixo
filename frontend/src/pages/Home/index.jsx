@@ -9,11 +9,14 @@ export const Home = () => {
   const [gameId, setGameId] = useState();
   const [board, setBoard] = useState();
   const [player, setPlayer] = useState();
+  const [colorToPlay, setColorToPlay] = useState();
 
   useEffect(() => {
     const fetchNewGameId = async () => {
-      const newGameId = await createNewGame();
-      setGameId(newGameId);
+      const newGame = await createNewGame();
+      setGameId(newGame.id);
+      setPlayer(newGame.player);
+      console.log(newGame);
     };
     // Run once
     fetchNewGameId();
@@ -23,11 +26,10 @@ export const Home = () => {
     if (gameId !== undefined) {
       // Start sever fetch interval
       const interval = setInterval(async () => {
-        const { board: newBoard, player: newPlayer } = await fetchGameData(
-          gameId
-        );
+        const { board: newBoard, colorToPlay: newColorToPlay } =
+          await fetchGameData(gameId);
         setBoard(newBoard);
-        setPlayer(newPlayer);
+        setColorToPlay(newColorToPlay);
       }, SERVER_UPDATE_INTERVAL);
       return () => clearInterval(interval);
     }
@@ -36,9 +38,12 @@ export const Home = () => {
   const onGridClick = (index) => {
     // Update client side
     // TODO: Check if game is won
-    setBoard(board + player * 3 ** index);
-    setPlayer(3 - player);
-    sendMove(gameId, index);
+    if (player === colorToPlay) {
+      // Is allowed to play
+      sendMove(gameId, index);
+      setBoard(board + player * 3 ** index);
+      setColorToPlay(3 - colorToPlay);
+    }
   };
 
   return board === undefined ? (
@@ -46,6 +51,8 @@ export const Home = () => {
   ) : (
     <div>
       <TicTacToeGrid state={board} onClick={onGridClick} />
+      <p>Game ID: {gameId}</p>
+      <p>Player: {player}</p>
     </div>
   );
 };

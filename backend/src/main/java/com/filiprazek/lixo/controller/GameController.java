@@ -1,5 +1,7 @@
 package com.filiprazek.lixo.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,17 +27,22 @@ public class GameController {
   @GetMapping("/{id}")
   public GameDto get(@PathVariable String id) {
     GameEntity gameEntity = this.gameService.findEntityById(id);
-    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.player, gameEntity.isWon);
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
   }
 
   @PostMapping("/{id}")
   public GameDto move(@PathVariable String id, @RequestBody MoveDto data) {
     GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move));
-    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.player, gameEntity.isWon);
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
+  }
+
+  @GetMapping("all")
+  public List<String> getAllIds() {
+    return this.gameService.getAllIds();
   }
 
   @PostMapping("new")
   public String startNew() {
-    return this.gameService.newGame().id;
+    return this.gameService.newGame().getId();
   }
 }

@@ -62,6 +62,17 @@ public class GameService {
         return gameRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
 
+    public List<String> getAllIds() {
+        List<Game> allGames = gameRepository.findAll();
+        List<String> allGameIds = new ArrayList<>();
+
+        for (Game game : allGames) {
+            allGameIds.add(game.getId());
+        }
+
+        return allGameIds;
+    }
+
     public GameEntity findEntityById(String id) {
         Game game = this.findById(id);
         List<Integer> cellValues = this.getCellValues(game.getBoard());
@@ -71,9 +82,8 @@ public class GameService {
         return new GameEntity(game.getId(), game.getBoard(), player, isWon);
     }
 
-    public GameEntity newGame() {
-        Game newGame = gameRepository.save(new Game());
-        return new GameEntity(newGame.getId(), newGame.getBoard(), 1, false);
+    public Game newGame() {
+        return gameRepository.save(new Game());
     }
 
     public GameEntity move(String id, int move) {
