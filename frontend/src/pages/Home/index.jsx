@@ -16,7 +16,6 @@ export const Home = () => {
       const newGame = await createNewGame();
       setGameId(newGame.id);
       setPlayer(newGame.player);
-      console.log(newGame);
     };
     // Run once
     fetchNewGameId();

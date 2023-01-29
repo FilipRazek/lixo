@@ -24,13 +24,13 @@ public class GameController {
   @Autowired
   private GameService gameService;
 
-  @GetMapping("/{id}")
+  @GetMapping("{id}")
   public GameDto get(@PathVariable String id) {
     GameEntity gameEntity = this.gameService.findEntityById(id);
     return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
   }
 
-  @PostMapping("/{id}")
+  @PostMapping("{id}")
   public GameDto move(@PathVariable String id, @RequestBody MoveDto data) {
     GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move));
     return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);

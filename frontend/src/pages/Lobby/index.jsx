@@ -3,6 +3,7 @@ import { createNewGame, fetchLobby } from "../../client";
 import "./index.css";
 
 const SERVER_UPDATE_INTERVAL = 5000;
+const LOBBY_GAME_COUNT = 5;
 
 export const Lobby = () => {
   const [gameIds, setGameIds] = useState();
@@ -26,14 +27,18 @@ export const Lobby = () => {
   ) : (
     <div>
       <p>Latest games</p>
-      {gameIds.slice(-10).map((gameId) => (
-        <div>
-          <p key={gameId}>{gameId}</p>
-          <a href={gameId}>
-            <button>Join</button>
-          </a>
-        </div>
-      ))}
+      <table>
+        <tbody>
+          {gameIds.slice(-LOBBY_GAME_COUNT).map((gameId) => (
+            <tr key={gameId}>
+              <td>{gameId}</td>
+              <td>
+                <button onClick={() => console.log(gameId)}>Join</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <button onClick={newGame}>New Game</button>
     </div>
   );

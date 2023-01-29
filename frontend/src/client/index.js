@@ -1,19 +1,9 @@
 import axios from "axios";
-
-const { href: GAME_URL } = new URL(
-  process.env.REACT_APP_GAME_URL,
-  process.env.REACT_APP_BACKEND_URL
-);
-
-const { href: NEW_GAME_URL } = new URL(
-  process.env.REACT_APP_NEW_GAME_URL,
-  process.env.REACT_APP_BACKEND_URL
-);
-
-const { href: LOBBY_URL } = new URL(
-  process.env.REACT_APP_LOBBY_URL,
-  process.env.REACT_APP_BACKEND_URL
-);
+import {
+  GAME_URL,
+  LOBBY_URL,
+  NEW_GAME_URL,
+} from "./urlBuilder";
 
 export const createNewGame = async () => {
   const { data } = await axios.post(NEW_GAME_URL);
