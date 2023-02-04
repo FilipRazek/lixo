@@ -1,8 +1,10 @@
 package com.filiprazek.lixo.service;
 
 import com.filiprazek.lixo.data.Game;
+import com.filiprazek.lixo.entities.AuthGameEntity;
 import com.filiprazek.lixo.entities.GameEntity;
 import com.filiprazek.lixo.exception.EntityNotFoundException;
+import com.filiprazek.lixo.exception.GameNotJoinableException;
 import com.filiprazek.lixo.exception.InvalidMoveException;
 import com.filiprazek.lixo.repository.GameRepository;
 
@@ -29,7 +31,7 @@ public class GameService {
         return cellValues;
     }
 
-    private int getPlayerFromCellValues(List<Integer> cellValues) {
+    private int getColorToPlayFromCellValues(List<Integer> cellValues) {
         int totalCellValue = 0;
         for (int value : cellValues) {
             totalCellValue += value;
@@ -76,10 +78,34 @@ public class GameService {
     public GameEntity findEntityById(String id) {
         Game game = this.findById(id);
         List<Integer> cellValues = this.getCellValues(game.getBoard());
-        int player = this.getPlayerFromCellValues(cellValues);
-        int otherPlayer = 3 - player;
+        int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
+        int otherPlayer = 3 - colorToPlay;
         boolean isWon = this.checkWin(cellValues, otherPlayer);
-        return new GameEntity(game.getId(), game.getBoard(), player, isWon);
+        return new GameEntity(game.getId(), game.getBoard(), colorToPlay, isWon);
+    }
+
+    public AuthGameEntity joinGame(String id) {
+        Game game = this.findById(id);
+        String token;
+        int color;
+        if (!game.hasPlayer1Token()) {
+            token = "token-1";
+            color = 1;
+            game.setPlayer1Token(token);
+        } else if (!game.hasPlayer2Token()) {
+            token = "token-2";
+            color = 2;
+            game.setPlayer2Token(token);
+        }
+        else {
+            throw new GameNotJoinableException();
+        }
+        gameRepository.save(game);
+        List<Integer> cellValues = this.getCellValues(game.getBoard());
+        int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
+        int otherPlayer = 3 - colorToPlay;
+        boolean isWon = this.checkWin(cellValues, otherPlayer);
+        return new AuthGameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, token, color);
     }
 
     public Game newGame() {
@@ -89,19 +115,19 @@ public class GameService {
     public GameEntity move(String id, int move) {
         Game game = this.findById(id);
         List<Integer> cellValues = this.getCellValues(game.getBoard());
-        int player = this.getPlayerFromCellValues(cellValues);
-        int otherPlayer = 3 - player;
+        int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
+        int otherPlayer = 3 - colorToPlay;
         boolean isGameWon = this.checkWin(cellValues, otherPlayer);
 
         boolean moveCanBePlayed = cellValues.get(move) == 0;
         if (isGameWon || !moveCanBePlayed) {
             throw new InvalidMoveException();
         }
-        int newBoard = game.getBoard() + player * (int) Math.pow(3, move);
+        int newBoard = game.getBoard() + colorToPlay * (int) Math.pow(3, move);
 
         game.setBoard(newBoard);
         gameRepository.save(game);
 
-        return new GameEntity(game.getId(), newBoard, player, isGameWon);
+        return new GameEntity(game.getId(), newBoard, colorToPlay, isGameWon);
     }
 }

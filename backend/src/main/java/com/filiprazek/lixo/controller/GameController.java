@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.filiprazek.lixo.dto.AuthGameDto;
 import com.filiprazek.lixo.dto.GameDto;
 import com.filiprazek.lixo.dto.MoveDto;
+import com.filiprazek.lixo.entities.AuthGameEntity;
 import com.filiprazek.lixo.entities.GameEntity;
 import com.filiprazek.lixo.service.GameService;
 
@@ -44,5 +46,11 @@ public class GameController {
   @PostMapping("new")
   public String startNew() {
     return this.gameService.newGame().getId();
+  }
+
+  @PostMapping("join/{id}")
+  public AuthGameDto joinGame(@PathVariable String id) {
+    AuthGameEntity authGameEntity = this.gameService.joinGame(id);
+    return new AuthGameDto(authGameEntity.id, authGameEntity.board, authGameEntity.colorToPlay, authGameEntity.isWon, authGameEntity.token, authGameEntity.color);
   }
 }

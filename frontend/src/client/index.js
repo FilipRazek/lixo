@@ -1,9 +1,5 @@
 import axios from "axios";
-import {
-  GAME_URL,
-  LOBBY_URL,
-  NEW_GAME_URL,
-} from "./urlBuilder";
+import { GAME_URL, JOIN_GAME_URL, LOBBY_URL, NEW_GAME_URL } from "./urlBuilder";
 
 export const createNewGame = async () => {
   const { data } = await axios.post(NEW_GAME_URL);
@@ -21,5 +17,10 @@ export const sendMove = (gameId, move) => {
 
 export const fetchLobby = async () => {
   const { data } = await axios.get(LOBBY_URL);
+  return data;
+};
+
+export const joinGame = async (gameId) => {
+  const { data } = await axios.post(`${JOIN_GAME_URL}/${gameId}`);
   return data;
 };
