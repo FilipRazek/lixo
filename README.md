@@ -1,4 +1,4 @@
-A website to play tic tac toe online against friends. Currently in development
+A website to play tic tac toe online against friends.
 
 # Run locally
 
