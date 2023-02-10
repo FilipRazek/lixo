@@ -88,6 +88,8 @@ public class GameService {
         Game game = this.findById(id);
         String token;
         int color;
+        // If the game has no player 1, join as player 1. Otherwise, join as player 2.
+        // If the game has 2 players, do not allow joining.
         if (!game.hasPlayer1Token()) {
             token = "token-1";
             color = 1;
@@ -96,8 +98,7 @@ public class GameService {
             token = "token-2";
             color = 2;
             game.setPlayer2Token(token);
-        }
-        else {
+        } else {
             throw new GameNotJoinableException();
         }
         gameRepository.save(game);
@@ -112,15 +113,19 @@ public class GameService {
         return gameRepository.save(new Game());
     }
 
-    public GameEntity move(String id, int move) {
+    public GameEntity move(String id, int move, String token) {
         Game game = this.findById(id);
         List<Integer> cellValues = this.getCellValues(game.getBoard());
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isGameWon = this.checkWin(cellValues, otherPlayer);
 
+        // Compare the token to the token of the player who should play
+        boolean correctToken = (colorToPlay == 1 ? game.checkPlayer1Token(token) : game.checkPlayer2Token(token));
         boolean moveCanBePlayed = cellValues.get(move) == 0;
-        if (isGameWon || !moveCanBePlayed) {
+        if (isGameWon || !moveCanBePlayed || !correctToken) {
+            // Log the color to play, the token, and the move
+            System.out.println("colorToPlay: " + colorToPlay + ", token: " + token + ", move: " + move);
             throw new InvalidMoveException();
         }
         int newBoard = game.getBoard() + colorToPlay * (int) Math.pow(3, move);

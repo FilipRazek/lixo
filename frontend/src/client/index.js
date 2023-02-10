@@ -11,8 +11,8 @@ export const fetchGameData = async (gameId) => {
   return data;
 };
 
-export const sendMove = (gameId, move) => {
-  axios.post(`${GAME_URL}/${gameId}`, { move });
+export const sendMove = (gameId, move, token) => {
+  axios.post(`${GAME_URL}/${gameId}`, { move, token });
 };
 
 export const fetchLobby = async () => {

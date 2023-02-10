@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { createNewGame, fetchLobby, joinGame } from "../../client";
+import { Link } from "react-router-dom";
+import { createNewGame, fetchLobby } from "../../client";
 import "./index.css";
 
 const SERVER_UPDATE_INTERVAL = 5000;
@@ -22,11 +23,6 @@ export const Lobby = () => {
     setGameIds([...gameIds, newGameId]);
   };
 
-  const join = async (gameId) => {
-    const gameData = await joinGame(gameId);
-    console.log(gameData);
-  };
-
   return gameIds === undefined ? (
     <p>Loading...</p>
   ) : (
@@ -38,7 +34,9 @@ export const Lobby = () => {
             <tr key={gameId}>
               <td>{gameId}</td>
               <td>
-                <button onClick={() => join(gameId)}>Join</button>
+                <Link to={`/game/${gameId}`}>
+                  <button>View</button>
+                </Link>
               </td>
             </tr>
           ))}

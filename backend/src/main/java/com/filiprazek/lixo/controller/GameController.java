@@ -34,7 +34,7 @@ public class GameController {
 
   @PostMapping("{id}")
   public GameDto move(@PathVariable String id, @RequestBody MoveDto data) {
-    GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move));
+    GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move), data.token);
     return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
   }
 

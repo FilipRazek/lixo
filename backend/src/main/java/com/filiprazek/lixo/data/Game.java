@@ -44,18 +44,18 @@ public class Game {
   }
 
   public boolean hasPlayer1Token() {
-    return this.player1Token != "";
+    return this.player1Token.length() != 0;
   }
 
   public boolean hasPlayer2Token() {
-    return this.player2Token != "";
+    return this.player2Token.length() != 0;
   }
 
   public boolean checkPlayer1Token(String token) {
-    return this.player1Token == token;
+    return this.player1Token.equals(token);
   }
 
   public boolean checkPlayer2Token(String token) {
-    return this.player2Token == token;
+    return this.player2Token.equals(token);
   }
 }
