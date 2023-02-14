@@ -7,12 +7,31 @@ import { getWinner } from "../../helper";
 
 const SERVER_UPDATE_INTERVAL = 1000;
 
+const WinnerComponent = ({ winner }) =>
+  winner ? <p>Player {winner} wins!</p> : null;
+const TurnComponent = ({ winner, color, colorToPlay }) => (
+  <div>
+    <p>Color: {color}</p>
+    {!winner && (
+      <p>
+        {color === colorToPlay
+          ? "It's your turn!"
+          : "It's your opponent's turn"}
+      </p>
+    )}
+  </div>
+);
+
+const JoinButton = ({ joinable, join }) =>
+  joinable ? <button onClick={join}>Join</button> : null;
+
 export const Game = () => {
   // Extract gameId from URL param
   const { gameId } = useParams();
 
   const [authGameData, setAuthGameData] = useState({});
   const [board, setBoard] = useState();
+  const [joinable, setJoinable] = useState();
   const [colorToPlay, setColorToPlay] = useState();
 
   const [winner, setWinner] = useState();
@@ -21,7 +40,6 @@ export const Game = () => {
     if (board === undefined) return;
     // Check if game is won from board state
     const winner = getWinner(board);
-    console.log("winner", winner);
     setWinner(winner);
   }, [board]);
 
@@ -29,10 +47,14 @@ export const Game = () => {
   useEffect(() => {
     // Start sever fetch interval
     const interval = setInterval(async () => {
-      const { board: newBoard, colorToPlay: newColorToPlay } =
-        await fetchGameData(gameId);
+      const {
+        board: newBoard,
+        colorToPlay: newColorToPlay,
+        joinable: newJoinable,
+      } = await fetchGameData(gameId);
       setBoard(newBoard);
       setColorToPlay(newColorToPlay);
+      setJoinable(newJoinable);
     }, SERVER_UPDATE_INTERVAL);
     return () => clearInterval(interval);
   }, [gameId]);
@@ -47,10 +69,13 @@ export const Game = () => {
   };
 
   const join = async () => {
-    const newGameData = await joinGame(gameId);
-    setBoard(newGameData.board);
-    setColorToPlay(newGameData.colorToPlay);
-    setAuthGameData({ token: newGameData.token, color: newGameData.color });
+    if (joinable) {
+      const newGameData = await joinGame(gameId);
+      setBoard(newGameData.board);
+      setColorToPlay(newGameData.colorToPlay);
+      setJoinable(newGameData.joinable);
+      setAuthGameData({ token: newGameData.token, color: newGameData.color });
+    }
   };
 
   return (
@@ -58,20 +83,15 @@ export const Game = () => {
       <TicTacToeGrid state={board} onClick={onGridClick} />
       <p>Game ID: {gameId}</p>
       <p>Color to play: {colorToPlay}</p>
-      {winner ? <p>Player {winner} wins!</p> : null}
+      <WinnerComponent winner={winner} />
       {color ? (
-        <div>
-          <p>Color: {color}</p>
-          {!winner && (
-            <p>
-              {color === colorToPlay
-                ? "It's your turn!"
-                : "It's your opponent's turn"}
-            </p>
-          )}
-        </div>
+        <TurnComponent
+          color={color}
+          colorToPlay={colorToPlay}
+          winner={winner}
+        />
       ) : (
-        <button onClick={join}>Join</button>
+        <JoinButton join={join} joinable={joinable} />
       )}
     </div>
   );

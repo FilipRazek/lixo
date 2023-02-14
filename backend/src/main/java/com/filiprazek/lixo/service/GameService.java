@@ -64,15 +64,17 @@ public class GameService {
         return gameRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
 
-    public List<String> getAllIds() {
+    public List<String> getAllJoinableIds() {
         List<Game> allGames = gameRepository.findAll();
-        List<String> allGameIds = new ArrayList<>();
+        List<String> joinableGameIds = new ArrayList<>();
 
         for (Game game : allGames) {
-            allGameIds.add(game.getId());
+            if (!game.hasPlayer1Token() || !game.hasPlayer2Token()) {
+                joinableGameIds.add(game.getId());
+            }
         }
 
-        return allGameIds;
+        return joinableGameIds;
     }
 
     public GameEntity findEntityById(String id) {
@@ -81,32 +83,31 @@ public class GameService {
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isWon = this.checkWin(cellValues, otherPlayer);
-        return new GameEntity(game.getId(), game.getBoard(), colorToPlay, isWon);
+        boolean joinable = !game.hasPlayer1Token() || !game.hasPlayer2Token();
+        return new GameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, joinable);
     }
 
     public AuthGameEntity joinGame(String id) {
         Game game = this.findById(id);
         String token;
-        int color;
-        // If the game has no player 1, join as player 1. Otherwise, join as player 2.
         // If the game has 2 players, do not allow joining.
-        if (!game.hasPlayer1Token()) {
-            token = "token-1";
-            color = 1;
-            game.setPlayer1Token(token);
-        } else if (!game.hasPlayer2Token()) {
-            token = "token-2";
-            color = 2;
-            game.setPlayer2Token(token);
-        } else {
+        if (game.hasPlayer1Token() && game.hasPlayer2Token()) {
             throw new GameNotJoinableException();
+        }
+        int color = game.hasPlayer1Token() ? 2 : game.hasPlayer2Token() || Math.random() > 0.5 ? 1 : 2;
+        if (color == 1) {
+            token = "token-1";
+            game.setPlayer1Token(token);
+        } else {
+            token = "token-2";
+            game.setPlayer2Token(token);
         }
         gameRepository.save(game);
         List<Integer> cellValues = this.getCellValues(game.getBoard());
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isWon = this.checkWin(cellValues, otherPlayer);
-        return new AuthGameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, token, color);
+        return new AuthGameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, true, token, color);
     }
 
     public Game newGame() {
@@ -119,6 +120,7 @@ public class GameService {
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isGameWon = this.checkWin(cellValues, otherPlayer);
+        boolean joinable = !game.hasPlayer1Token() || !game.hasPlayer2Token();
 
         // Compare the token to the token of the player who should play
         boolean correctToken = (colorToPlay == 1 ? game.checkPlayer1Token(token) : game.checkPlayer2Token(token));
@@ -133,6 +135,6 @@ public class GameService {
         game.setBoard(newBoard);
         gameRepository.save(game);
 
-        return new GameEntity(game.getId(), newBoard, colorToPlay, isGameWon);
+        return new GameEntity(game.getId(), newBoard, colorToPlay, isGameWon, joinable);
     }
 }

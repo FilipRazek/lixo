@@ -29,18 +29,18 @@ public class GameController {
   @GetMapping("{id}")
   public GameDto get(@PathVariable String id) {
     GameEntity gameEntity = this.gameService.findEntityById(id);
-    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon, gameEntity.joinable);
   }
 
   @PostMapping("{id}")
   public GameDto move(@PathVariable String id, @RequestBody MoveDto data) {
     GameEntity gameEntity = this.gameService.move(id, Integer.parseInt(data.move), data.token);
-    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon);
+    return new GameDto(gameEntity.id, gameEntity.board, gameEntity.colorToPlay, gameEntity.isWon, gameEntity.joinable);
   }
 
-  @GetMapping("all")
-  public List<String> getAllIds() {
-    return this.gameService.getAllIds();
+  @GetMapping("all-joinable")
+  public List<String> getAllJoinableIds() {
+    return this.gameService.getAllJoinableIds();
   }
 
   @PostMapping("new")
@@ -51,6 +51,7 @@ public class GameController {
   @PostMapping("join/{id}")
   public AuthGameDto joinGame(@PathVariable String id) {
     AuthGameEntity authGameEntity = this.gameService.joinGame(id);
-    return new AuthGameDto(authGameEntity.id, authGameEntity.board, authGameEntity.colorToPlay, authGameEntity.isWon, authGameEntity.token, authGameEntity.color);
+    return new AuthGameDto(authGameEntity.id, authGameEntity.board, authGameEntity.colorToPlay, authGameEntity.isWon,
+        authGameEntity.joinable, authGameEntity.token, authGameEntity.color);
   }
 }
