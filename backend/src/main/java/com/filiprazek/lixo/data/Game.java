@@ -2,6 +2,8 @@ package com.filiprazek.lixo.data;
 
 import org.springframework.data.annotation.Id;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class Game {
 
   @Id
@@ -9,14 +11,14 @@ public class Game {
 
   private int board;
 
-  private String player1Token;
+  private String player1Hash;
 
-  private String player2Token;
+  private String player2Hash;
 
   public Game() {
     this.board = 0;
-    this.player1Token = "";
-    this.player2Token = "";
+    this.player1Hash = null;
+    this.player2Hash = null;
   }
 
   public int getBoard() {
@@ -32,30 +34,32 @@ public class Game {
   }
 
   public void setPlayer1Token(String token) {
-    if (!this.hasPlayer1Token()) {
-      this.player1Token = token;
+    if (!this.hasPlayer1()) {
+      String hash = BCrypt.hashpw(token, BCrypt.gensalt());
+      this.player1Hash = hash;
     }
   }
 
   public void setPlayer2Token(String token) {
-    if (!this.hasPlayer2Token()) {
-      this.player2Token = token;
+    if (!this.hasPlayer2()) {
+      String hash = BCrypt.hashpw(token, BCrypt.gensalt());
+      this.player2Hash = hash;
     }
   }
 
-  public boolean hasPlayer1Token() {
-    return this.player1Token.length() != 0;
+  public boolean hasPlayer1() {
+    return this.player1Hash != null;
   }
 
-  public boolean hasPlayer2Token() {
-    return this.player2Token.length() != 0;
+  public boolean hasPlayer2() {
+    return this.player2Hash != null;
   }
 
   public boolean checkPlayer1Token(String token) {
-    return this.player1Token.equals(token);
+    return BCrypt.checkpw(token, this.player1Hash);
   }
 
   public boolean checkPlayer2Token(String token) {
-    return this.player2Token.equals(token);
+    return BCrypt.checkpw(token, this.player2Hash);
   }
 }

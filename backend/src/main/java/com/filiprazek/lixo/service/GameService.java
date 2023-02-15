@@ -7,7 +7,7 @@ import com.filiprazek.lixo.exception.EntityNotFoundException;
 import com.filiprazek.lixo.exception.GameNotJoinableException;
 import com.filiprazek.lixo.exception.InvalidMoveException;
 import com.filiprazek.lixo.repository.GameRepository;
-
+import org.apache.commons.lang3.RandomStringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,12 +69,18 @@ public class GameService {
         List<String> joinableGameIds = new ArrayList<>();
 
         for (Game game : allGames) {
-            if (!game.hasPlayer1Token() || !game.hasPlayer2Token()) {
+            if (!game.hasPlayer1() || !game.hasPlayer2()) {
                 joinableGameIds.add(game.getId());
             }
         }
 
         return joinableGameIds;
+    }
+
+    private String generateToken() {
+        // Credit: https://stackoverflow.com/a/31260788
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()-_=+[{]}\\|;:\'\",<.>/?";
+        return RandomStringUtils.random(16, characters);
     }
 
     public GameEntity findEntityById(String id) {
@@ -83,23 +89,21 @@ public class GameService {
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isWon = this.checkWin(cellValues, otherPlayer);
-        boolean joinable = !game.hasPlayer1Token() || !game.hasPlayer2Token();
+        boolean joinable = !game.hasPlayer1() || !game.hasPlayer2();
         return new GameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, joinable);
     }
 
     public AuthGameEntity joinGame(String id) {
         Game game = this.findById(id);
-        String token;
         // If the game has 2 players, do not allow joining.
-        if (game.hasPlayer1Token() && game.hasPlayer2Token()) {
+        if (game.hasPlayer1() && game.hasPlayer2()) {
             throw new GameNotJoinableException();
         }
-        int color = game.hasPlayer1Token() ? 2 : game.hasPlayer2Token() || Math.random() > 0.5 ? 1 : 2;
+        String token = generateToken();
+        int color = game.hasPlayer1() ? 2 : game.hasPlayer2() || Math.random() > 0.5 ? 1 : 2;
         if (color == 1) {
-            token = "token-1";
             game.setPlayer1Token(token);
         } else {
-            token = "token-2";
             game.setPlayer2Token(token);
         }
         gameRepository.save(game);
@@ -120,14 +124,12 @@ public class GameService {
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isGameWon = this.checkWin(cellValues, otherPlayer);
-        boolean joinable = !game.hasPlayer1Token() || !game.hasPlayer2Token();
+        boolean joinable = !game.hasPlayer1() || !game.hasPlayer2();
 
-        // Compare the token to the token of the player who should play
-        boolean correctToken = (colorToPlay == 1 ? game.checkPlayer1Token(token) : game.checkPlayer2Token(token));
+        // Check the player's token
+        boolean correctHash = (colorToPlay == 1 ? game.checkPlayer1Token(token) : game.checkPlayer2Token(token));
         boolean moveCanBePlayed = cellValues.get(move) == 0;
-        if (isGameWon || !moveCanBePlayed || !correctToken) {
-            // Log the color to play, the token, and the move
-            System.out.println("colorToPlay: " + colorToPlay + ", token: " + token + ", move: " + move);
+        if (isGameWon || !moveCanBePlayed || !correctHash) {
             throw new InvalidMoveException();
         }
         int newBoard = game.getBoard() + colorToPlay * (int) Math.pow(3, move);
