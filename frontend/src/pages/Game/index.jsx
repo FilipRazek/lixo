@@ -5,7 +5,8 @@ import "./index.css";
 import { useParams } from "react-router-dom";
 import { getWinner } from "../../helper";
 
-const SERVER_UPDATE_INTERVAL = 1000;
+const SERVER_UPDATE_INTERVAL = 400;
+const LAST_MOVE_DELAY = 1000;
 
 const WinnerComponent = ({ winner }) =>
   winner ? <p>Player {winner} wins!</p> : null;
@@ -29,6 +30,7 @@ export const Game = () => {
   // Extract gameId from URL param
   const { gameId } = useParams();
 
+  const [lastMoveDate, setLastMoveDate] = useState();
   const [authGameData, setAuthGameData] = useState({});
   const [board, setBoard] = useState();
   const [joinable, setJoinable] = useState();
@@ -52,12 +54,16 @@ export const Game = () => {
         colorToPlay: newColorToPlay,
         joinable: newJoinable,
       } = await fetchGameData(gameId);
-      setBoard(newBoard);
-      setColorToPlay(newColorToPlay);
+
+      if (!lastMoveDate || new Date() - lastMoveDate >= LAST_MOVE_DELAY) {
+        // Update board only if a sufficient delay elapsed since last move
+        setBoard(newBoard);
+        setColorToPlay(newColorToPlay);
+      }
       setJoinable(newJoinable);
     }, SERVER_UPDATE_INTERVAL);
     return () => clearInterval(interval);
-  }, [gameId]);
+  }, [gameId, lastMoveDate]);
 
   const onGridClick = (index) => {
     // Update client side if player is allowed to play
@@ -67,6 +73,7 @@ export const Game = () => {
       sendMove(gameId, index, token);
       setBoard(board + color * 3 ** index);
       setColorToPlay(3 - colorToPlay);
+      setLastMoveDate(new Date());
     }
   };
 

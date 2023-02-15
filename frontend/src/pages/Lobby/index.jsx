@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createNewGame, fetchLobby } from "../../client";
 import "./index.css";
 
-const SERVER_UPDATE_INTERVAL = 5000;
+const SERVER_UPDATE_INTERVAL = 1000;
 const LOBBY_GAME_COUNT = 5;
 
 export const Lobby = () => {
