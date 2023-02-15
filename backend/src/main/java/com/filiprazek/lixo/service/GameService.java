@@ -111,7 +111,8 @@ public class GameService {
         int colorToPlay = this.getColorToPlayFromCellValues(cellValues);
         int otherPlayer = 3 - colorToPlay;
         boolean isWon = this.checkWin(cellValues, otherPlayer);
-        return new AuthGameEntity(game.getId(), game.getBoard(), colorToPlay, isWon, true, token, color);
+        return new AuthGameEntity(game.getId(), game.getBoard(), colorToPlay, isWon,
+                !game.hasPlayer1() || !game.hasPlayer2(), token, color);
     }
 
     public Game newGame() {
@@ -129,7 +130,7 @@ public class GameService {
         // Check the player's token
         boolean correctHash = (colorToPlay == 1 ? game.checkPlayer1Token(token) : game.checkPlayer2Token(token));
         boolean moveCanBePlayed = cellValues.get(move) == 0;
-        if (isGameWon || !moveCanBePlayed || !correctHash) {
+        if (joinable || isGameWon || !moveCanBePlayed || !correctHash) {
             throw new InvalidMoveException();
         }
         int newBoard = game.getBoard() + colorToPlay * (int) Math.pow(3, move);

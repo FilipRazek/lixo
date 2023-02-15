@@ -61,7 +61,9 @@ export const Game = () => {
 
   const onGridClick = (index) => {
     // Update client side if player is allowed to play
-    if (color === colorToPlay && !winner) {
+    const isGamePlayable = !joinable && !winner;
+    const isPlayerTurn = color && color === colorToPlay;
+    if (isGamePlayable && isPlayerTurn) {
       sendMove(gameId, index, token);
       setBoard(board + color * 3 ** index);
       setColorToPlay(3 - colorToPlay);
