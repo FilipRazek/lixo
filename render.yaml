@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: lixo-backend
+    env: docker
+    region: frankfurt
+    plan: free
+    rootDir: backend
+  - type: web
+    name: lixo-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./build
+    rootDir: frontend
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        value: https://lixo-backend.onrender.com
